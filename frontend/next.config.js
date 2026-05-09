@@ -17,12 +17,6 @@ const nextConfig = {
   // Performance optimizations
   poweredByHeader: false,
   compress: true,
-  // PWA configuration
-  pwa: {
-    dest: 'public',
-    register: true,
-    skipWaiting: true,
-  },
   // Internationalization
   i18n: {
     locales: ['ar', 'ru', 'en'],
