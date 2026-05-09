@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
@@ -17,25 +18,6 @@ const nextConfig = {
   // Performance optimizations
   poweredByHeader: false,
   compress: true,
-  // Internationalization
-  i18n: {
-    locales: ['ar', 'ru', 'en'],
-    defaultLocale: 'ar',
-    domains: [
-      {
-        domain: 'ar.noor-al-ilm.com',
-        defaultLocale: 'ar',
-      },
-      {
-        domain: 'ru.noor-al-ilm.com',
-        defaultLocale: 'ru',
-      },
-      {
-        domain: 'en.noor-al-ilm.com',
-        defaultLocale: 'en',
-      },
-    ],
-  },
   // Security headers
   async headers() {
     return [
