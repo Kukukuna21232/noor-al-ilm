@@ -1,0 +1,397 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Variables ─────────────────────────────────────── */
+@layer base {
+  :root {
+    /* Luxury Islamic Color Palette */
+    --background: 12 18 32; /* #0c1220 - deep navy */
+    --surface: 19 28 46; /* #131c2e - card surface */
+    --card: 19 28 46; /* #131c2e - card surface */
+    --card-foreground: 240 236 224; /* #f0ece0 - warm white */
+    --foreground: 240 236 224; /* #f0ece0 - warm white */
+    --muted-foreground: rgba(240, 236, 224, 0.5); /* muted text */
+    --popover: 19 28 46;
+    --popover-foreground: 240 236 224;
+    --primary: 26 107 60; /* #1a6b3c - Islamic green */
+    --primary-foreground: 240 236 224;
+    --secondary: 201 168 76; /* #c9a84c - gold accent */
+    --secondary-foreground: 12 18 32;
+    --muted: 25 35 55;
+    --accent: 25 35 55;
+    --accent-foreground: 240 236 224;
+    --destructive: 220 38 38;
+    --destructive-foreground: 240 236 224;
+    --border: rgba(201, 168, 76, 0.15); /* very subtle gold tint */
+    --input: 25 35 55;
+    --ring: 201 168 76; /* gold */
+    --radius: 0.75rem;
+    --sidebar-width: 260px;
+  }
+
+  * { 
+    @apply border-border;
+    border-color: rgba(201, 168, 76, 0.15);
+  }
+  
+  html { 
+    scroll-behavior: smooth; 
+  }
+  
+  body { 
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+    background-color: #0c1220;
+    color: #f0ece0;
+  }
+  
+  [dir="rtl"] body { 
+    font-family: 'Amiri', serif; 
+  }
+  
+  /* Arabic text styling */
+  .arabic-text {
+    font-family: 'Amiri', serif;
+    color: #c9a84c;
+  }
+}
+
+/* ── Component Classes ─────────────────────────────────── */
+@layer components {
+  /* Buttons - Luxury styling */
+  .btn-primary {
+    background-color: #1a6b3c;
+    color: #f0ece0;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary:hover {
+    background-color: #145a32;
+  }
+  
+  .btn-gold {
+    background-color: #c9a84c;
+    color: #0c1220;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-gold:hover {
+    background-color: #b49543;
+  }
+  
+  .btn-outline {
+    background-color: transparent;
+    color: #f0ece0;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: 0.5px solid rgba(201, 168, 76, 0.3);
+    cursor: pointer;
+  }
+  .btn-outline:hover {
+    background-color: rgba(201, 168, 76, 0.1);
+    border-color: rgba(201, 168, 76, 0.5);
+  }
+  
+  .btn-ghost {
+    background-color: transparent;
+    color: rgba(240, 236, 224, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 400;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-ghost:hover {
+    background-color: rgba(240, 236, 224, 0.1);
+    color: #f0ece0;
+  }
+
+  /* Cards - Luxury styling */
+  .card {
+    background-color: #131c2e;
+    border: 0.5px solid rgba(201, 168, 76, 0.15);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+  }
+  .card:hover {
+    border-color: rgba(201, 168, 76, 0.25);
+  }
+  
+  .islamic-card {
+    background-color: #131c2e;
+    border: 0.5px solid rgba(201, 168, 76, 0.15);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+  }
+  .islamic-card:hover {
+    border-color: rgba(201, 168, 76, 0.25);
+  }
+
+  /* Inputs - Luxury styling */
+  .input-field {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 0.5px solid rgba(201, 168, 76, 0.15);
+    background-color: #131c2e;
+    color: #f0ece0;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+  }
+  .input-field:focus {
+    outline: none;
+    border-color: rgba(201, 168, 76, 0.4);
+  }
+  .input-field::placeholder {
+    color: rgba(240, 236, 224, 0.5);
+  }
+
+  /* Typography - Luxury styling */
+  .section-title {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #f0ece0;
+    margin-bottom: 1rem;
+  }
+  .section-subtitle {
+    color: rgba(240, 236, 224, 0.7);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    max-width: 42rem;
+    margin-bottom: 2rem;
+  }
+  .arabic-text {
+    font-family: 'Amiri', serif;
+    direction: rtl;
+    text-align: right;
+    line-height: 1.8;
+    color: #c9a84c;
+  }
+  .arabic-quran {
+    font-family: 'Amiri', serif;
+    direction: rtl;
+    text-align: center;
+    font-size: 1.5rem;
+    line-height: 2.2;
+    color: #c9a84c;
+  }
+
+  /* Navigation - Luxury styling */
+  .nav-link {
+    color: rgba(240, 236, 224, 0.8);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    position: relative;
+    text-decoration: none;
+  }
+  .nav-link:hover {
+    color: #f0ece0;
+  }
+  .nav-link-active {
+    color: #c9a84c;
+  }
+
+  /* Badges - Luxury styling */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .badge-primary {
+    background-color: rgba(26, 107, 60, 0.2);
+    color: #1a6b3c;
+  }
+  .badge-gold {
+    background-color: rgba(201, 168, 76, 0.2);
+    color: #c9a84c;
+  }
+  .badge-red {
+    background-color: rgba(220, 38, 38, 0.2);
+    color: #dc2626;
+  }
+
+  /* Backgrounds - Subtle patterns */
+  .geometric-bg {
+    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9a84c' fill-opacity='0.03'%3E%3Cpath d='M50 50v-6h-3v6h-6v3h6v6h3v-6h6v-3h-6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .star-bg {
+    background-image: radial-gradient(circle, rgba(201,168,76,0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  /* Sidebar - Luxury styling */
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    color: rgba(240, 236, 224, 0.6);
+    text-decoration: none;
+  }
+  .sidebar-link:hover {
+    background-color: rgba(201, 168, 76, 0.1);
+    color: #f0ece0;
+  }
+  .sidebar-link-active {
+    background-color: #1a6b3c;
+    color: #f0ece0;
+  }
+
+  /* Prayer card - Luxury styling */
+  .prayer-card {
+    background-color: rgba(19, 28, 46, 0.8);
+    border: 0.5px solid rgba(201, 168, 76, 0.15);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s ease;
+    cursor: default;
+  }
+  .prayer-card:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Skeleton - Luxury styling */
+  .skeleton {
+    background-color: rgba(240, 236, 224, 0.1);
+    border-radius: 0.75rem;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Scrollbar - Luxury styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(201, 168, 76, 0.3) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { 
+    width: 6px; 
+    height: 6px; 
+  }
+  .scrollbar-thin::-webkit-scrollbar-track { 
+    background: transparent; 
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb { 
+    background: rgba(201, 168, 76, 0.3); 
+    border-radius: 3px; 
+  }
+}
+
+/* ── Utilities ─────────────────────────────────────────── */
+@layer utilities {
+  .bg-background { 
+    background-color: #0c1220; 
+  }
+  .text-foreground { 
+    color: #f0ece0; 
+  }
+  .bg-card { 
+    background-color: #131c2e; 
+  }
+  .text-card-foreground { 
+    color: #f0ece0; 
+  }
+  .border-border { 
+    border-color: rgba(201, 168, 76, 0.15); 
+  }
+  .text-muted-foreground { 
+    color: rgba(240, 236, 224, 0.5); 
+  }
+  .bg-muted { 
+    background-color: #192337; 
+  }
+  .ring-ring { 
+    --tw-ring-color: #c9a84c; 
+  }
+
+  .text-balance { 
+    text-wrap: balance; 
+  }
+  .scrollbar-hide { 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+  }
+  .scrollbar-hide::-webkit-scrollbar { 
+    display: none; 
+  }
+
+  .gradient-text {
+    background: linear-gradient(to right, #1a6b3c, #c9a84c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-text-gold {
+    background: linear-gradient(to right, #c9a84c, #d4af37);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* ── Custom animations ─────────────────────────────────── */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee { 
+  animation: marquee 30s linear infinite; 
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── RTL Support ───────────────────────────────────────── */
+[dir="rtl"] .nav-link::after { 
+  left: auto; 
+  right: 0; 
+}
+[dir="rtl"] .sidebar-link { 
+  flex-direction: row-reverse; 
+}

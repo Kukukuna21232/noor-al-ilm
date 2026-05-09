@@ -1,0 +1,571 @@
+# Global Kubernetes deployment configuration for Noor Al-Ilm
+# Supports multi-region deployment with auto-scaling and CDN integration
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: noor-al-ilm
+  labels:
+    name: noor-al-ilm
+    environment: production
+
+---
+# ConfigMap for global configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: global-config
+  namespace: noor-al-ilm
+data:
+  NODE_ENV: "production"
+  APP_URL: "https://noor-al-ilm.com"
+  CDN_URL: "https://cdn.noor-al-ilm.com"
+  API_URL: "https://api.noor-al-ilm.com"
+  REDIS_URL: "redis://redis-cluster:6379"
+  DATABASE_URL: "postgresql://user:pass@postgres-cluster:5432/noor_ilm"
+  ELASTICSEARCH_URL: "http://elasticsearch-cluster:9200"
+  ALLOWED_ORIGINS: "https://noor-al-ilm.com,https://www.noor-al-ilm.com,https://cdn.noor-al-ilm.com"
+  RATE_LIMIT_MAX: "1000"
+  LOG_LEVEL: "info"
+
+---
+# Secret for sensitive data
+apiVersion: v1
+kind: Secret
+metadata:
+  name: global-secrets
+  namespace: noor-al-ilm
+type: Opaque
+data:
+  JWT_SECRET: <base64-encoded-jwt-secret>
+  DATABASE_PASSWORD: <base64-encoded-db-password>
+  REDIS_PASSWORD: <base64-encoded-redis-password>
+  OPENAI_API_KEY: <base64-encoded-openai-key>
+  STRIPE_SECRET_KEY: <base64-encoded-stripe-key>
+  PAYPAL_CLIENT_SECRET: <base64-encoded-paypal-secret>
+
+---
+# Horizontal Pod Autoscaler for frontend
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: noor-al-ilm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 3
+  maxReplicas: 50
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+
+---
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: noor-al-ilm
+  labels:
+    app: frontend
+    tier: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: noor-al-ilm/frontend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: global-config
+              key: NODE_ENV
+        - name: APP_URL
+          valueFrom:
+            configMapKeyRef:
+              name: global-config
+              key: APP_URL
+        - name: API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: global-config
+              key: API_URL
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+# API Gateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: noor-al-ilm
+  labels:
+    app: api-gateway
+    tier: backend
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        tier: backend
+    spec:
+      containers:
+      - name: api-gateway
+        image: noor-al-ilm/api-gateway:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: global-config
+              key: NODE_ENV
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: global-config
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: global-config
+              key: REDIS_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: global-secrets
+              key: JWT_SECRET
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: global-secrets
+              key: DATABASE_PASSWORD
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+# PostgreSQL StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: noor-al-ilm
+spec:
+  serviceName: postgres
+  replicas: 3
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: noor_ilm
+        - name: POSTGRES_USER
+          value: noor_user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: global-secrets
+              key: DATABASE_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "ssd"
+      resources:
+        requests:
+          storage: 100Gi
+
+---
+# Redis Cluster
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: noor-al-ilm
+spec:
+  serviceName: redis
+  replicas: 6
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        command:
+        - redis-server
+        - --cluster-enabled
+        - "yes"
+        - --cluster-config-file
+        - nodes.conf
+        - --cluster-node-timeout
+        - "5000"
+        - --appendonly
+        - "yes"
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: global-secrets
+              key: REDIS_PASSWORD
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "ssd"
+      resources:
+        requests:
+          storage: 10Gi
+
+---
+# Services
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: noor-al-ilm
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 3000
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway-service
+  namespace: noor-al-ilm
+spec:
+  selector:
+    app: api-gateway
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: noor-al-ilm
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  clusterIP: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: noor-al-ilm
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  clusterIP: None
+
+---
+# Ingress for global load balancing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: global-ingress
+  namespace: noor-al-ilm
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://noor-al-ilm.com,https://www.noor-al-ilm.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+  - hosts:
+    - noor-al-ilm.com
+    - www.noor-al-ilm.com
+    - api.noor-al-ilm.com
+    - cdn.noor-al-ilm.com
+    secretName: noor-al-ilm-tls
+  rules:
+  - host: noor-al-ilm.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+  - host: www.noor-al-ilm.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+  - host: api.noor-al-ilm.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway-service
+            port:
+              number: 80
+  - host: cdn.noor-al-ilm.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+
+---
+# Network Policies for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: noor-al-ilm-network-policy
+  namespace: noor-al-ilm
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - podSelector:
+        matchLabels:
+          tier: frontend
+    - podSelector:
+        matchLabels:
+          tier: backend
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: backend
+    - podSelector:
+        matchLabels:
+          app: postgres
+    - podSelector:
+        matchLabels:
+          app: redis
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+
+---
+# Pod Disruption Budgets
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: noor-al-ilm
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: frontend
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway-pdb
+  namespace: noor-al-ilm
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels:
+      app: api-gateway
+
+---
+# Resource Quotas
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: noor-al-ilm-quota
+  namespace: noor-al-ilm
+spec:
+  hard:
+    requests.cpu: "10"
+    requests.memory: 20Gi
+    limits.cpu: "20"
+    limits.memory: 40Gi
+    persistentvolumeclaims: "10"
+    services: "10"
+    secrets: "10"
+    configmaps: "10"
+
+---
+# Limit Ranges
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: noor-al-ilm-limits
+  namespace: noor-al-ilm
+spec:
+  limits:
+  - default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Container
+  - max:
+      cpu: "2"
+      memory: "4Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi"
+    type: Container

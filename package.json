@@ -1,0 +1,29 @@
+{
+  "name": "noor-al-ilm",
+  "version": "2.0.0",
+  "description": "Noor Al-Ilm — Global Islamic Educational Ecosystem",
+  "private": true,
+  "workspaces": ["frontend", "backend/*"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend/api-gateway && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend/api-gateway && npm run build",
+    "migrate": "cd backend/api-gateway && npm run migrate",
+    "seed": "cd backend/api-gateway && npm run seed",
+    "docker:up": "docker compose -f infrastructure/docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infrastructure/docker/docker-compose.yml down",
+    "docker:build": "docker compose -f infrastructure/docker/docker-compose.yml build",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
