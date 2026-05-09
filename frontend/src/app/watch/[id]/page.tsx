@@ -49,6 +49,10 @@ const RELATED = [
   { id: '6', title_ar: 'فضل الصلاة على النبي ﷺ', channel: 'نور الهدى', views: 21000, duration: '12:00', thumb: '⭐' },
 ];
 
+export function generateStaticParams() {
+  return ['1', '2', '3', '4', '5', '6'].map((id) => ({ id }));
+}
+
 export default function WatchPage() {
   const params = useParams();
   const id = params.id as string;
