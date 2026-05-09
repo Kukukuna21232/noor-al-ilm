@@ -2,9 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'export',
-  trailingSlash: true,
-  distDir: 'out',
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['lucide-react'],

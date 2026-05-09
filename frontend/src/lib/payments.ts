@@ -146,13 +146,8 @@ export class PaymentService {
   }
 
   private async initializeStripe(): Promise<void> {
-    try {
-      const stripe = await import('@stripe/stripe-js');
-      const stripeInstance = stripe.loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY!);
-      // Store instance for later use
-    } catch (error) {
-      console.warn('Stripe SDK not available:', error);
-    }
+    // Demo mode - Stripe not needed for client demo
+    console.log('Stripe initialization skipped - demo mode');
   }
 
   private async initializePayPal(): Promise<void> {
